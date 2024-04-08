@@ -3,10 +3,13 @@ from rest_framework import status
 from rest_framework.decorators import APIView
 from posts.serializers import PostSerializer
 from django.http import HttpResponse, JsonResponse
+from rest_framework.permissions import IsAuthenticated
 from posts.models import Post
 
 
 class PostList(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, format=None):
         posts = Post.objects.all()
         serializer = PostSerializer(posts, many=True)
