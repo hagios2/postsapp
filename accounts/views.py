@@ -4,6 +4,7 @@ from rest_framework.request import Request
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
+from .tokens import refresh_jwt_token
 
 
 class SignUpView(generics.GenericAPIView):
@@ -30,7 +31,7 @@ class LoginView(APIView):
         if user is not None:
             response = {
                 'message': 'Login successful!',
-                'token': user.auth_token.key,
+                'tokens': refresh_jwt_token(user)
             }
             return Response(data=response, status=status.HTTP_200_OK)
         else:
