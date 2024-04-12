@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.validators import ValidationError
 from rest_framework.authtoken.models import Token
+from posts.models import Post
 from .models import User
 
 
@@ -26,3 +27,15 @@ class SignUpSerializer(serializers.ModelSerializer):
         user.save()
         Token.objects.create(user=user)
         return user
+
+
+class AuthUserPostsSerializer(serializers.HyperlinkedModelSerializer):
+    posts = serializers.HyperlinkedRelatedField(
+        many=True,
+        view_name='post_detail',
+        queryset=User.objects.all(),
+    )
+
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'username', 'posts')

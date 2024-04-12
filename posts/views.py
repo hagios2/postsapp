@@ -1,10 +1,12 @@
 from rest_framework.response import Response
+from rest_framework.request import Request
 from rest_framework import status
-from rest_framework.decorators import APIView
+from rest_framework.decorators import APIView, permission_classes, api_view
 from posts.serializers import PostSerializer
 from django.http import HttpResponse, JsonResponse
 from rest_framework.permissions import IsAuthenticated
 from posts.models import Post
+from accounts.serializers import AuthUserPostsSerializer
 
 
 class PostList(APIView):
@@ -22,7 +24,7 @@ class PostList(APIView):
     def post(self, request, format=None):
         serializer = PostSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(author=request.user)
             response = {
                 'message': 'post created successfully',
                 'data': serializer.data
@@ -74,3 +76,10 @@ class PostDetail(APIView):
             'message': 'Post deleted'
         }
         return JsonResponse(response, status=status.HTTP_200_OK)
+
+
+@permission_classes([IsAuthenticated])
+@api_view(['GET'])
+def get_posts_for_auth_user(request: Request):
+    serializer = AuthUserPostsSerializer(instance=request.user, context={'request': request})
+    return Response(serializer.data, status=status.HTTP_200_OK)
