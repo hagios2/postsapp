@@ -7,10 +7,10 @@ from django.http import HttpResponse, JsonResponse
 from rest_framework.permissions import IsAuthenticated
 from posts.models import Post
 from accounts.serializers import AuthUserPostsSerializer
-
+from .permissions import ReadOnly, IsAuthorOrReadOnly
 
 class PostList(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthorOrReadOnly]
 
     def get(self, request, format=None):
         posts = Post.objects.all()
@@ -38,6 +38,8 @@ class PostList(APIView):
 
 
 class PostDetail(APIView):
+    permission_classes = [IsAuthorOrReadOnly]
+
     def get_object(self, pk):
         try:
             return Post.objects.get(pk=pk)
