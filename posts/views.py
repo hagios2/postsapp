@@ -8,6 +8,9 @@ from rest_framework.permissions import IsAuthenticated
 from posts.models import Post
 from accounts.serializers import AuthUserPostsSerializer
 from .permissions import ReadOnly, IsAuthorOrReadOnly
+from rest_framework import mixins
+from rest_framework import generics
+
 
 class PostList(APIView):
     permission_classes = [IsAuthorOrReadOnly]
@@ -85,3 +88,22 @@ class PostDetail(APIView):
 def get_posts_for_auth_user(request: Request):
     serializer = AuthUserPostsSerializer(instance=request.user, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class AuthUserPostsList(
+    generics.GenericAPIView,
+    mixins.ListModelMixin,
+):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # username = self.kwargs.get('username')
+        username = self.request.query_params.get('username') or None
+        if username is not None:
+            return Post.objects.filter(author__username=username)
+        return self.queryset.all()
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
